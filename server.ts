@@ -1,5 +1,12 @@
 import 'dotenv/config';
+import { config as dotenvConfig } from 'dotenv';
 import express from 'express';
+
+// Load environment variables with correct precedence:
+//   process.env (platform secrets) > .env.local (local dev) > .env
+// dotenv does not override already-set variables by default, so secrets
+// configured in AI Studio Settings > Secrets always take precedence.
+dotenvConfig({ path: '.env.local' });
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai';

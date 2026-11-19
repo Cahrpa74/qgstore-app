@@ -1,10 +1,12 @@
 // server.ts
 import "dotenv/config";
+import { config as dotenvConfig } from "dotenv";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleGenAI, ThinkingLevel, Type } from "@google/genai";
 import mysql from "mysql2/promise";
+dotenvConfig({ path: ".env.local" });
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
 var PORT = Number(process.env.PORT) || 3e3;
