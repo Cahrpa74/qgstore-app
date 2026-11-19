@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Playfair Display", serif;
+
+  --color-slate-900: #02040a;
+  --color-brand-cyan: #22d3ee;
+  --color-brand-blue: #2563eb;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-300 bg-[#02040a];
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-2xl;
+  }
+  .glass-card {
+    @apply bg-white/[0.02] border border-white/5 backdrop-blur-md rounded-xl hover:bg-white/[0.05] transition-all;
+  }
+  .input-dark {
+    @apply bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-cyan-100 focus:outline-none focus:border-brand-cyan/50;
+  }
+  .terminal-text {
+    @apply font-mono text-[11px] leading-relaxed text-cyan-200/60;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(34, 211, 238, 0.2);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 211, 238, 0.4);
+  }
+}

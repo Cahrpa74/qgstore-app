@@ -1,0 +1,8 @@
+{
+  "name": "Remix LeadGen AI Pro1",
+  "description": "Enterprise-grade lead generation agent with AI search grounding and brand architecture intelligence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
