@@ -44,6 +44,11 @@ const EXPORT_GENERIC_PREFIXES = new Set([
   'orders', 'order', 'maintprog', 'special_markets',
 ]);
 
+// ---------- Exhibitor Extractor: Bookmarklet ----------
+// One-click bookmarklet for exhibition directories (MapYourShow, floorplan lists, etc.)
+// Extracts company name + website domain as "Name | domain.com" and copies to clipboard.
+const EXHIBITOR_BOOKMARKLET = `javascript:(function(){var results=[];document.querySelectorAll('a[href*="http"], .exhibitor-name, .company-name, .booth-name, [class*="exhibitor"], [class*="company"], [class*="booth"], .listing-item, .floorplan-item, .exhibitor-listing').forEach(function(el){var text=el.innerText||el.textContent||'';text=text.trim();var href=el.getAttribute('href');var domain='';if(href){var m=href.match(/https?:\\/\\/([^\\/]+)/);if(m){domain=m[1].replace(/^www\\./,'').replace(/:\\d+$/,'');}}var skip=['mapyourshow','expo','registration','login','map-your-show','showmanagement','exhibitor-login','attendee'];if(text&&domain&&!skip.some(function(s){return domain.toLowerCase().includes(s);})){results.push(text+' | '+domain);}});var seen={};var unique=results.filter(function(v){if(!seen[v]){seen[v]=true;return true;}return false;});navigator.clipboard.writeText(unique.join('\\n')).then(function(){alert('Extracted '+unique.length+' exhibitors (Name | domain.com) copied to clipboard!');});})();`;
+
 const isExportJunkEmail = (email: string): boolean => {
   const lower = email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lower)) return true;
@@ -217,6 +222,13 @@ const LeadFinder = () => {
   const [apiAlert, setApiAlert] = useState<ApiAlert | null>(null);
   const abortRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const exhibitorFileRef = useRef<HTMLInputElement | null>(null);
+
+  // Exhibitor Extractor state
+  const [showExhibitorExtractor, setShowExhibitorExtractor] = useState(false);
+  const [exhibitorRawText, setExhibitorRawText] = useState('');
+  const [exhibitorParsed, setExhibitorParsed] = useState<{ company: string; domain: string }[]>([]);
+  const [exhibitorError, setExhibitorError] = useState('');
 
   const availableRoles = useMemo(() => {
     const rolesSet = new Set<string>();
@@ -278,9 +290,127 @@ const LeadFinder = () => {
       }
     } catch {
       setTargetError('INVALID_TARGET_FILE');
-    } finally {
-      e.target.value = '';
     }
+  };
+
+  // ---------- Exhibitor Extractor: Smart List Parser ----------
+
+  const parseExhibitorPairs = (text: string): { company: string; domain: string }[] => {
+    const pairs: { company: string; domain: string }[] = [];
+    const seen = new Set<string>();
+
+    text.split(/[\r\n]+/).forEach((rawLine) => {
+      const line = rawLine.trim();
+      if (!line) return;
+
+      // Handle "Company | domain.com" pipe format
+      if (line.includes('|')) {
+        const [companyPart, domainPart] = line.split('|').map((s) => s.trim());
+        if (companyPart && domainPart) {
+          const key = `${companyPart.toLowerCase()}|${domainPart.toLowerCase()}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            pairs.push({ company: companyPart, domain: domainPart });
+          }
+        }
+      } else if (line.includes('.') && !line.includes(' ')) {
+        // Bare domain: domain.com
+        const key = `|${line.toLowerCase()}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          pairs.push({ company: line.split('.')[0], domain: line });
+        }
+      } else {
+        // Bare company name: Acme Corp
+        const key = `${line.toLowerCase()}|`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          pairs.push({ company: line, domain: '' });
+        }
+      }
+    });
+
+    return pairs;
+  };
+
+  const handleExhibitorPaste = () => {
+    if (!exhibitorRawText.trim()) {
+      setExhibitorError('PASTE_TEXT_REQUIRED');
+      return;
+    }
+    try {
+      const pairs = parseExhibitorPairs(exhibitorRawText);
+      if (pairs.length === 0) {
+        setExhibitorError('NO_VALID_PAIRS_FOUND');
+        return;
+      }
+      setExhibitorParsed(pairs);
+      setExhibitorError('');
+    } catch {
+      setExhibitorError('PARSE_ERROR');
+    }
+  };
+
+  const handleExhibitorFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const lower = file.name.toLowerCase();
+      let text = '';
+
+      if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json<unknown[]>(firstSheet, { header: 1 });
+        const lines: string[] = [];
+        for (const row of rows) {
+          if (!Array.isArray(row)) continue;
+          lines.push(row.map((cell) => (cell == null ? '' : String(cell))).join(' | '));
+        }
+        text = lines.join('\n');
+      } else {
+        text = await file.text();
+      }
+
+      const pairs = parseExhibitorPairs(text);
+      if (pairs.length === 0) {
+        setExhibitorError('NO_VALID_PAIRS_FOUND');
+        return;
+      }
+      setExhibitorParsed(pairs);
+      setExhibitorRawText(text);
+      setExhibitorError('');
+    } catch {
+      setExhibitorError('INVALID_EXHIBITOR_FILE');
+    }
+  };
+
+  const copyToClipboard = (text: string, successMsg: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setExhibitorError(successMsg);
+        setTimeout(() => setExhibitorError(''), 2000);
+      })
+      .catch(() => setExhibitorError('COPY_FAILED'));
+  };
+
+  const addParsedToBatch = () => {
+    if (exhibitorParsed.length === 0) return;
+    const newLines = exhibitorParsed.map((p) =>
+      p.domain ? `${p.company} | ${p.domain}` : p.company
+    );
+    const merged = Array.from(
+      new Set([
+        ...bulkInput.split('\n').map((t) => t.trim()).filter(Boolean),
+        ...newLines,
+      ])
+    ).join('\n');
+    setBulkInput(merged);
+    setShowExhibitorExtractor(false);
+    setExhibitorParsed([]);
+    setExhibitorRawText('');
   };
 
   const runBatchTargets = async (
@@ -333,6 +463,14 @@ const LeadFinder = () => {
     const CHUNK_SIZE = 3;
 
     const parseTargetInput = (target: string): TargetInput => {
+      // Explicit domain format: "Company | domain.com" — lock domain 100%, never guess
+      const pipeIdx = target.indexOf('|');
+      if (pipeIdx !== -1) {
+        return {
+          company: target.slice(0, pipeIdx).trim(),
+          domain: target.slice(pipeIdx + 1).trim(),
+        };
+      }
       const looksLikeDomain = target.includes('.') && !target.includes(' ');
       return {
         company: looksLikeDomain ? target.split('.')[0] : target,
@@ -930,8 +1068,134 @@ const LeadFinder = () => {
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Exhibitor Extractor toggle */}
               <div>
-                <label className="text-[10px] text-slate-500 uppercase block mb-1.5 font-mono">Target Protocols (CSV)</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowExhibitorExtractor(!showExhibitorExtractor)}
+                    disabled={loading}
+                    className={cn(
+                      "text-[9px] font-mono uppercase tracking-wider flex items-center gap-1 disabled:opacity-40",
+                      showExhibitorExtractor ? "text-emerald-400" : "text-cyan-400 hover:text-cyan-300"
+                    )}
+                    title="Exhibitor List Importer"
+                  >
+                    <Download className="w-2.5 h-2.5" />
+                    {showExhibitorExtractor ? 'HIDE_EXHIBITOR_EXTRACTOR' : 'EXHIBITOR_EXTRACTOR'}
+                  </button>
+                </div>
+              </div>
+
+              {showExhibitorExtractor && (
+                <div className="glass-panel p-3 border-emerald-500/20 bg-emerald-500/5 mt-2 space-y-3">
+                  <div>
+                    <label className="text-[9px] text-emerald-400/70 uppercase block mb-1 font-mono">1. Bookmarklet (One-Click Extract)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={EXHIBITOR_BOOKMARKLET}
+                        className="flex-1 input-dark text-[8px] font-mono text-emerald-300"
+                        onClick={(e) => e.target.select()}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(EXHIBITOR_BOOKMARKLET, 'BOOKMARKLET_COPIED')}
+                        disabled={loading}
+                        className="text-[9px] font-mono uppercase text-emerald-400 hover:text-emerald-300 disabled:opacity-40 px-2"
+                      >
+                        COPY
+                      </button>
+                    </div>
+                    <p className="text-[8px] text-slate-500 mt-1 font-mono uppercase tracking-tighter">
+                      Drag to bookmarks bar → click on exhibition site → extracts "Name | domain.com" to clipboard
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-emerald-400/70 uppercase block mb-1 font-mono">2. Paste Raw Text or Upload List</label>
+                    <textarea
+                      rows={3}
+                      value={exhibitorRawText}
+                      onChange={e => setExhibitorRawText(e.target.value)}
+                      placeholder="Paste exhibitor list here…\nAcme Corp | acme.com\nMicrosoft | microsoft.com\nShopify"
+                      className="w-full input-dark text-[9px] resize-none custom-scrollbar"
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={handleExhibitorPaste}
+                        disabled={loading}
+                        className="flex-1 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase rounded hover:bg-emerald-500/20 disabled:opacity-40 transition-all"
+                      >
+                        PARSE_PASTED_TEXT
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => exhibitorFileRef.current?.click()}
+                        disabled={loading}
+                        className="text-[9px] font-mono uppercase tracking-wider text-cyan-400 hover:text-cyan-300 flex items-center gap-1 disabled:opacity-40 px-2"
+                        title="Import .txt or .csv exhibitor list"
+                      >
+                        <Upload className="w-2.5 h-2.5" />
+                        Upload List
+                      </button>
+                      <input
+                        ref={exhibitorFileRef}
+                        type="file"
+                        accept=".txt,.csv"
+                        onChange={handleExhibitorFileUpload}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-emerald-400/70 uppercase block mb-1 font-mono">3. Parsed Pairs (Name | domain.com)</label>
+                    <div className="max-h-24 overflow-y-auto custom-scrollbar space-y-1 mb-2">
+                      {exhibitorParsed.map((p, i) => (
+                        <div key={i} className="text-[9px] font-mono text-slate-300 flex justify-between">
+                          <span className="text-cyan-300">{p.company}</span>
+                          <span>{p.domain ? ` | ${p.domain}` : '<no domain>'}</span>
+                        </div>
+                      ))}
+                      {exhibitorParsed.length === 0 && (
+                        <p className="text-[9px] text-slate-500 font-mono italic">No pairs parsed yet.</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={addParsedToBatch}
+                        disabled={loading || exhibitorParsed.length === 0}
+                        className="flex-1 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold uppercase rounded hover:bg-emerald-500/30 disabled:opacity-40 transition-all"
+                      >
+                        ADD_TO_BATCH ({exhibitorParsed.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setExhibitorParsed([]); setExhibitorRawText(''); setExhibitorError(''); }}
+                        className="text-[9px] text-rose-500 hover:text-rose-400 font-mono uppercase px-2"
+                      >
+                        CLEAR
+                      </button>
+                    </div>
+                  </div>
+                  {exhibitorError && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="text-[9px] text-rose-500 mt-1 font-mono uppercase tracking-tighter"
+                    >
+                      {exhibitorError}
+                    </motion.p>
+                  )}
+                </div>
+              )}
+              <div>
                 <input 
                   value={roles}
                   onChange={e => setRoles(e.target.value)}
