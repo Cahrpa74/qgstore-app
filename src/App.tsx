@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
-import { Search, ShieldCheck, Globe, Mail, Link2, Activity, Upload, Download, Clock, FileSpreadsheet, AlertTriangle, X, Square, Phone, MapPin, ExternalLink, RotateCcw, Briefcase, CheckCircle2 } from 'lucide-react';
+import { Search, ShieldCheck, Globe, Mail, Link2, Activity, Upload, Download, Clock, FileSpreadsheet, AlertTriangle, X, Square, Phone, MapPin, ExternalLink, RotateCcw, Briefcase, CheckCircle2, Menu, BarChart3, Users, Settings, Copy, Trash2, Play, Stop, Save, LayoutDashboard } from 'lucide-react';
 import { cn } from './lib/utils';
 import { AppMode, ApiTierMode, LeadGenResult, Lead } from './types';
 import { leadGenService, TargetInput } from './lib/gemini';
@@ -76,6 +76,35 @@ const scoreExportEmail = (email: string): number => {
   return localPart.includes('.') || localPart.includes('_') ? 105 : 100;
 };
 
+const NavBadge = ({ label, count }: { label: string; count: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-[9px] font-mono font-bold uppercase tracking-tighter text-cyan-300"
+  >
+    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+    <span>{label}</span>
+    <span className="bg-cyan-900/50 px-1.5 py-0.5 rounded text-cyan-400 border border-cyan-500/30">{count}</span>
+  </motion.div>
+);
+
+const StatCard = ({ label, value, icon: Icon, color = 'cyan' }: { label: string; value: string | number; icon: React.ElementType; color?: string }) => (
+  <motion.div
+    whileHover={{ y: -4 }}
+    className="glass-card p-4 border-l-4"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-[9px] font-mono text-slate-500 uppercase tracking-wider mb-1">{label}</p>
+        <p className="text-xl font-mono font-bold text-white">{value}</p>
+      </div>
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: color === 'cyan' ? 'rgba(34,211,238,0.15)' : color === 'emerald' ? 'rgba(16,185,129,0.15)' : 'rgba(168,85,247,0.15)' }}>
+        <Icon className="w-4 h-4" style={{ color: color === 'cyan' ? '#22d3ee' : color === 'emerald' ? '#10b981' : '#a855f7' }} />
+      </div>
+    </div>
+  </motion.div>
+);
+
 const normalizeAndSortEmails = (rawList: string[]): string[] => {
   const seen = new Set<string>();
   const cleanList: string[] = [];
@@ -119,7 +148,7 @@ const LeadCard: React.FC<{ lead: Lead }> = ({ lead }) => {
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-5 group flex flex-col justify-between"
+      className="glass-card p-4 mb-3 border border-white/5"
     >
       <div>
         <div className="flex justify-between items-start mb-3 gap-2">
