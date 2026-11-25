@@ -1762,11 +1762,12 @@ Return ONLY valid JSON matching the object schema, keeping "domain" equal to "${
 
       // Auto-save to Supabase extracted_leads table
       try {
-        const { error: dbError } = await supabase
+        console.log('[SUPABASE] Attempting save for:', sanitized.domain, '| company:', sanitized.companyName);
+        const { data: dbData, error: dbError } = await supabase
           .from("extracted_leads")
           .upsert(
             {
-              company_name: sanitized.companyName,
+              company_name: sanitized.companyName || "Unknown",
               domain: sanitized.domain,
               industry: sanitized.companyIntel?.industry || "",
               status: sanitized.companyIntel?.verificationStage || "UNVERIFIED",
@@ -1786,10 +1787,12 @@ Return ONLY valid JSON matching the object schema, keeping "domain" equal to "${
           );
 
         if (dbError) {
-          console.error("Supabase Save Error:", dbError.message);
+          console.error('[SUPABASE] Save Error for:', sanitized.domain, dbError.message);
+        } else {
+          console.log('[SUPABASE] Save result:', { domain: sanitized.domain, data: dbData, error: dbError });
         }
       } catch (supabaseErr) {
-        console.error("Supabase Connection Error:", supabaseErr.message);
+        console.error('[SUPABASE] Connection Error for:', sanitized.domain, supabaseErr.message);
       }
 
       res.json(sanitized);
@@ -2012,6 +2015,42 @@ For EACH company:
       for (const r of results) {
         await saveLeadsToDatabase(r, batchIndustry);
       }
+
+      // Auto-save to Supabase extracted_leads table for batch
+      for (const r of results) {
+        try {
+          console.log('[SUPABASE] Attempting batch save for:', r.domain, '| company:', r.companyName);
+          const { data: dbData, error: dbError } = await supabase
+            .from("extracted_leads")
+            .upsert(
+              {
+                company_name: r.companyName || "Unknown",
+                domain: r.domain,
+                industry: r.companyIntel?.industry || "",
+                status: r.companyIntel?.verificationStage || "UNVERIFIED",
+                found_count: r.leads?.length || 0,
+                phones: r.companyIntel?.phones || [],
+                contacts: r.leads || [],
+                missing_roles: r.companyIntel?.rolesMissing || [],
+                summary: r.statusDetail || "",
+                web_sources: r.companyIntel?.groundingSources
+                  ? r.companyIntel.groundingSources.map((s) => s.url)
+                  : [],
+                updated_at: new Date().toISOString()
+              },
+              { onConflict: "domain" }
+            );
+
+          if (dbError) {
+            console.error('[SUPABASE] Batch Save Error for:', r.domain, dbError.message);
+          } else {
+            console.log('[SUPABASE] Batch Save result:', { domain: r.domain, data: dbData, error: dbError });
+          }
+        } catch (supabaseErr) {
+          console.error('[SUPABASE] Batch Connection Error for:', r.domain, supabaseErr.message);
+        }
+      }
+
       res.json({
         results,
         meta: {
