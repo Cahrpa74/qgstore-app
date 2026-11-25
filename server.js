@@ -8,11 +8,12 @@ import { GoogleGenAI, ThinkingLevel, Type } from "@google/genai";
 import mysql from "mysql2/promise";
 import { createClient } from "@supabase/supabase-js";
 
+dotenvConfig({ path: ".env.local" });
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_API_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-dotenvConfig({ path: ".env.local" });
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
 var PORT = Number(process.env.PORT) || 3e3;
