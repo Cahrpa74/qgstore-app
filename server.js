@@ -1539,6 +1539,10 @@ function normalizeMode(rawMode) {
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: "1mb" }));
+  app.use((req, res, next) => {
+    console.log('[REQ]', req.method, req.url, new Date().toISOString());
+    next();
+  });
   initDatabase();
   app.get("/api/keys/status", (_req, res) => {
     res.json(keyPool.getStatus());
@@ -2076,6 +2080,44 @@ For EACH company:
       });
     }
   });
+  app.post("/api/leads/save", async (req, res) => {
+    try {
+      const r = req.body;
+      console.log('[SUPABASE] /api/leads/save Attempting save for:', r.domain, '| company:', r.companyName);
+      const { data: dbData, error: dbError } = await supabase
+        .from("extracted_leads")
+        .upsert(
+          {
+            company_name: r.companyName || "Unknown",
+            domain: r.domain,
+            industry: r.companyIntel?.industry || "",
+            status: r.companyIntel?.verificationStage || "UNVERIFIED",
+            found_count: r.leads?.length || 0,
+            phones: r.companyIntel?.phones || [],
+            contacts: r.leads || [],
+            missing_roles: r.companyIntel?.rolesMissing || [],
+            summary: r.statusDetail || "",
+            web_sources: r.companyIntel?.groundingSources
+              ? r.companyIntel.groundingSources.map((s) => s.url)
+              : [],
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: "domain" }
+        );
+
+      if (dbError) {
+        console.error('[SUPABASE] /api/leads/save Error for:', r.domain, dbError.message);
+        res.status(500).json({ error: dbError.message });
+      } else {
+        console.log('[SUPABASE] /api/leads/save result:', { domain: r.domain, data: dbData, error: dbError });
+        res.json({ success: true, domain: r.domain });
+      }
+    } catch (supabaseErr) {
+      console.error('[SUPABASE] /api/leads/save Connection Error:', supabaseErr.message);
+      res.status(500).json({ error: supabaseErr.message });
+    }
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
