@@ -6,6 +6,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleGenAI, ThinkingLevel, Type } from "@google/genai";
 import mysql from "mysql2/promise";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 dotenvConfig({ path: ".env.local" });
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
@@ -1752,6 +1758,39 @@ Return ONLY valid JSON matching the object schema, keeping "domain" equal to "${
         }
       }
       await saveLeadsToDatabase(sanitized, batchIndustry);
+
+      // Auto-save to Supabase extracted_leads table
+      try {
+        const { error: dbError } = await supabase
+          .from("extracted_leads")
+          .upsert(
+            {
+              company_name: sanitized.companyName,
+              domain: sanitized.domain,
+              industry: sanitized.companyIntel?.industry || "",
+              status: sanitized.companyIntel?.verificationStage || "UNVERIFIED",
+              found_count: sanitized.leads?.length || 0,
+              phones: sanitized.companyIntel?.phones || [],
+              contacts: sanitized.leads || [],
+              missing_roles: sanitized.companyIntel?.rolesMissing || [],
+              summary: sanitized.statusDetail || "",
+              web_sources: sanitized.companyIntel?.groundingSources
+                ? sanitized.companyIntel.groundingSources.map(
+                    (s) => s.url
+                  )
+                : [],
+              updated_at: new Date().toISOString()
+            },
+            { onConflict: "domain" }
+          );
+
+        if (dbError) {
+          console.error("Supabase Save Error:", dbError.message);
+        }
+      } catch (supabaseErr) {
+        console.error("Supabase Connection Error:", supabaseErr.message);
+      }
+
       res.json(sanitized);
     } catch (err) {
       const parsedErr = err?.status ? err : parseGeminiError(err);
