@@ -7,6 +7,14 @@ import { AppMode, ApiTierMode, LeadGenResult, Lead } from './types';
 import { leadGenService, TargetInput } from './lib/gemini';
 import { persistenceService, supabase } from './lib/supabase';
 
+// Supabase client configured via import.meta.env.VITE_SUPABASE_URL and import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('[FRONTEND SUPABASE] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY env vars');
+}
+
 // --- Components ---
 
 const sanitizeExternalUrl = (rawUrl?: string): string | null => {
@@ -585,6 +593,39 @@ const LeadFinder = () => {
 
       setCurrentIndex(start);
       setChunkStatus(chunkRaw, 'PROCESSING');
+
+      // Upsert each result to extracted_leads table immediately after processing
+      for (const result of currentResults) {
+        const companyName = result.companyName || result.domain || 'Unknown';
+        const domain = result.domain || '';
+
+        if (!domain) {
+          console.warn('[FRONTEND SUPABASE] No domain found for result:', result);
+          continue;
+        }
+
+        const { error } = await supabase
+          .from('extracted_leads')
+          .upsert(
+            {
+              company_name: companyName,
+              domain: domain,
+              ...(result.companyIntel && {
+                industry: result.companyIntel.industry,
+                verificationStage: result.companyIntel.verificationStage,
+                brandName: result.companyIntel.brandName,
+              }),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'domain' }
+          );
+
+        if (error) {
+          console.error('[FRONTEND SUPABASE] Upsert Error for:', domain, error.message);
+        } else {
+          console.log('[FRONTEND SUPABASE] Upsert result for:', { domain, data: result.companyName, error });
+        }
+      }
 
       try {
         const batchResults = await fetchChunkWithRetry(chunkInputs, chunkRaw);
