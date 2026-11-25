@@ -471,13 +471,16 @@ function generateDeterministicDomainCandidates(companyName) {
     "and"
   ]);
   const rawWords = companyName.toLowerCase().replace(/&/g, " ").replace(/[^a-z0-9\s]/g, " ").trim().split(/\s+/).filter(Boolean);
+  // Do not guess domains for short acronyms (<= 4 chars) — too ambiguous (e.g. "ARA" could match arabnews.com, advanceresearch, etc.)
+  const cleanedName = companyName.trim().replace(/[^a-z0-9\s]/gi, " ").replace(/\s+/g, " ").trim();
+  if (cleanedName.length <= 4 && rawWords.length === 1) return [];
   const nonLegalWords = rawWords.filter(
     (w) => !["inc", "llc", "ltd", "corp", "corporation", "lp", "llp", "co"].includes(w)
   );
   const coreWords = rawWords.filter((w) => !stopWords.has(w));
   const candidates = /* @__PURE__ */ new Set();
   const addVariants = (slug) => {
-    if (slug.length < 3) return;
+    if (slug.length < 4) return;
     candidates.add(`${slug}.com`);
     candidates.add(`${slug}.ca`);
     candidates.add(`${slug}.net`);
@@ -498,8 +501,10 @@ function generateDeterministicDomainCandidates(companyName) {
       addVariants(firstTwo);
       if (rawWords.length >= 3) {
         const initials = rawWords.slice(0, 3).map((w) => w[0]).join("");
-        candidates.add(`${initials}inc.com`);
-        candidates.add(`${initials}.com`);
+        if (initials.length >= 4) {
+          candidates.add(`${initials}inc.com`);
+          candidates.add(`${initials}.com`);
+        }
       }
     }
     candidates.add(`${coreWords[0]}co.com`);
@@ -799,7 +804,9 @@ function scoreCompanySiteMatch(title, text, companyName, domain) {
   if (tokens.length === 0) return 0;
   const lowerTitle = title.trim().toLowerCase();
   const cleanDom = domain.toLowerCase().replace(/^www\./, "");
-  if (!lowerTitle || text.length < 120 && (lowerTitle === cleanDom || lowerTitle === cleanDom.split(".")[0])) {
+  const domSlug = cleanDom.split(".")[0];
+  const isShortAcronym = companyName.trim().length <= 4 && tokens.length === 1;
+  if (!lowerTitle || text.length < 120 && (lowerTitle === cleanDom || lowerTitle === domSlug)) {
     return 0;
   }
   const haystack = `${title} ${text.slice(0, 1400)}`.toLowerCase();
@@ -810,8 +817,10 @@ function scoreCompanySiteMatch(title, text, companyName, domain) {
   const spacelessTitle = lowerTitle.replace(/[^a-z0-9]/g, "");
   const titleHits = tokens.filter((t) => lowerTitle.includes(t) || spacelessTitle.includes(t)).length;
   const bodyHits = tokens.filter((t) => haystack.includes(t) || spacelessHaystack.includes(t)).length;
-  const minRequired = Math.min(2, tokens.length);
+  const minRequired = isShortAcronym ? tokens.length : Math.min(2, tokens.length);
   if (bodyHits < minRequired) return 0;
+  if (isShortAcronym && titleHits < tokens.length) return 0;
+  if (isShortAcronym && !domSlug.includes(tokens[0]) && !spacelessTitle.includes(tokens[0])) return 0;
   return titleHits * 35 + bodyHits * 20 + (bodyHits === tokens.length ? 40 : 0);
 }
 function titleMatchesCompany(title, text, companyName, domain = "") {
@@ -903,6 +912,8 @@ async function fetchClearbitDomainCandidates(companyName) {
     ])
   );
   const requiredTokens = words.map((w) => w.toLowerCase()).filter((w) => w.length >= 3);
+  // Short acronyms (<= 4 chars, single word): require exact/strong match to avoid false positives like arabnews.com matching "ARA"
+  const isShortAcronym = companyName.trim().length <= 4 && words.length === 1;
   const scoredDomains = /* @__PURE__ */ new Map();
   await Promise.allSettled(
     queries.map(async (q) => {
@@ -918,8 +929,13 @@ async function fetchClearbitDomainCandidates(companyName) {
         const itemNameClean = (item?.name || "").toLowerCase().replace(/[.,]/g, " ").split(/\s+/).filter((w) => w && !legalWords.has(w)).join(" ");
         if (!cleanDom) continue;
         const hits = requiredTokens.filter((t) => itemNameClean.includes(t) || cleanDom.includes(t)).length;
-        const minRequired = Math.min(2, Math.max(1, requiredTokens.length));
+        const minRequired = isShortAcronym ? requiredTokens.length : Math.min(2, Math.max(1, requiredTokens.length));
         if (hits < minRequired) continue;
+        // For short acronyms, require the token to appear at the start of domain or name (not just anywhere inside)
+        if (isShortAcronym) {
+          const token = requiredTokens[0];
+          if (!cleanDom.startsWith(token) && !itemNameClean.startsWith(token) && cleanDom !== token && itemNameClean !== token) continue;
+        }
         let score = hits * 20;
         if (itemNameClean === targetNormalized) {
           score += 100;

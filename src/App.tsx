@@ -80,11 +80,11 @@ const NavBadge = ({ label, count }: { label: string; count: number }) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-[9px] font-mono font-bold uppercase tracking-tighter text-cyan-300"
+    className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-[9px] font-mono font-bold uppercase tracking-tighter text-gold-300"
   >
     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
     <span>{label}</span>
-    <span className="bg-cyan-900/50 px-1.5 py-0.5 rounded text-cyan-400 border border-cyan-500/30">{count}</span>
+    <span className="bg-gold-900/50 px-1.5 py-0.5 rounded text-gold-400 border border-gold-500/30">{count}</span>
   </motion.div>
 );
 
@@ -141,7 +141,7 @@ const LeadCard: React.FC<{ lead: Lead }> = ({ lead }) => {
     lead.email_type === 'VERIFIED'
       ? { label: 'VERIFIED', cls: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' }
       : lead.email_type === 'PATTERN'
-        ? { label: 'PATTERN', cls: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10' }
+        ? { label: 'PATTERN', cls: 'text-gold-400 border-gold-500/30 bg-gold-500/10' }
         : { label: 'UNLISTED', cls: 'text-slate-500 border-slate-500/20 bg-slate-500/5' };
 
   return (
@@ -155,7 +155,7 @@ const LeadCard: React.FC<{ lead: Lead }> = ({ lead }) => {
           <div>
             <h4 className="font-medium text-white text-base">{lead.name}</h4>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-               <span className="text-[10px] font-mono text-cyan-500/80 uppercase tracking-tighter">{lead.role}</span>
+               <span className="text-[10px] font-mono text-gold-500/80 uppercase tracking-tighter">{lead.role}</span>
                {(lead.verifiedOnLinkedIn || safeLinkedinUrl) && (
                  <span className="text-[8px] font-mono px-1.5 py-0.5 rounded border border-sky-500/30 bg-sky-500/10 text-sky-300 uppercase tracking-wider">
                    LinkedIn
@@ -166,17 +166,17 @@ const LeadCard: React.FC<{ lead: Lead }> = ({ lead }) => {
           <div
             className={cn(
               "h-5 w-5 rounded-full flex items-center justify-center shrink-0",
-              safeUrl || safeLinkedinUrl ? "bg-cyan-500/10" : "bg-slate-800/60"
+              safeUrl || safeLinkedinUrl ? "bg-gold-500/10" : "bg-slate-800/60"
             )}
             title={safeLinkedinUrl ? "LinkedIn & Source Verified" : safeUrl ? "Verified External Source" : "No External Source"}
           >
-             <ShieldCheck className={cn("w-3 h-3", safeUrl || safeLinkedinUrl ? "text-cyan-400" : "text-slate-600")} />
+             <ShieldCheck className={cn("w-3 h-3", safeUrl || safeLinkedinUrl ? "text-gold-400" : "text-slate-600")} />
           </div>
         </div>
         <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
           <div className="flex items-center justify-between gap-2 text-[11px] text-slate-400 font-mono">
             <div className="flex items-center gap-2 min-w-0">
-              <Mail className="w-3 h-3 text-cyan-600 shrink-0" />
+              <Mail className="w-3 h-3 text-gold-600 shrink-0" />
               <span className="truncate">{lead.email_placeholder}</span>
             </div>
             <span className={cn("text-[8px] px-1.5 py-0.5 rounded border uppercase tracking-wider shrink-0", emailBadge.cls)}>
@@ -203,7 +203,7 @@ const LeadCard: React.FC<{ lead: Lead }> = ({ lead }) => {
             href={safeUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 py-2 bg-black/40 border border-white/5 rounded-lg text-[10px] text-slate-400 uppercase font-bold tracking-widest hover:text-cyan-400 hover:border-cyan-500/30 transition-all group/link"
+            className="flex-1 flex items-center justify-center gap-2 py-2 bg-black/40 border border-white/5 rounded-lg text-[10px] text-slate-400 uppercase font-bold tracking-widest hover:text-gold-400 hover:border-gold-500/30 transition-all group/link"
           >
             <Link2 className="w-3 h-3 group-hover/link:animate-pulse" />
             Verified Source
@@ -1057,7 +1057,7 @@ const LeadFinder = () => {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={loading}
-                    className="text-[9px] font-mono uppercase tracking-wider text-cyan-400 hover:text-cyan-300 flex items-center gap-1 disabled:opacity-40"
+                    className="text-[9px] font-mono uppercase tracking-wider text-gold-400 hover:text-gold-300 flex items-center gap-1 disabled:opacity-40"
                     title="Import .txt, .csv, or .xlsx target list"
                   >
                     <Upload className="w-2.5 h-2.5" />
@@ -1107,7 +1107,7 @@ const LeadFinder = () => {
                     disabled={loading}
                     className={cn(
                       "text-[9px] font-mono uppercase tracking-wider flex items-center gap-1 disabled:opacity-40",
-                      showExhibitorExtractor ? "text-emerald-400" : "text-cyan-400 hover:text-cyan-300"
+                      showExhibitorExtractor ? "text-emerald-400" : "text-gold-400 hover:text-gold-300"
                     )}
                     title="Exhibitor List Importer"
                   >
@@ -1165,7 +1165,7 @@ const LeadFinder = () => {
                         type="button"
                         onClick={() => exhibitorFileRef.current?.click()}
                         disabled={loading}
-                        className="text-[9px] font-mono uppercase tracking-wider text-cyan-400 hover:text-cyan-300 flex items-center gap-1 disabled:opacity-40 px-2"
+                        className="text-[9px] font-mono uppercase tracking-wider text-gold-400 hover:text-gold-300 flex items-center gap-1 disabled:opacity-40 px-2"
                         title="Import .txt or .csv exhibitor list"
                       >
                         <Upload className="w-2.5 h-2.5" />
@@ -1186,7 +1186,7 @@ const LeadFinder = () => {
                     <div className="max-h-24 overflow-y-auto custom-scrollbar space-y-1 mb-2">
                       {exhibitorParsed.map((p, i) => (
                         <div key={i} className="text-[9px] font-mono text-slate-300 flex justify-between">
-                          <span className="text-cyan-300">{p.company}</span>
+                          <span className="text-gold-300">{p.company}</span>
                           <span>{p.domain ? ` | ${p.domain}` : '<no domain>'}</span>
                         </div>
                       ))}
@@ -1237,7 +1237,7 @@ const LeadFinder = () => {
                   value={apiMode}
                   disabled={loading}
                   onChange={e => setApiMode(e.target.value as ApiTierMode)}
-                  className="w-full input-dark text-xs font-mono text-cyan-300 disabled:opacity-50"
+                  className="w-full input-dark text-xs font-mono text-gold-300 disabled:opacity-50"
                 >
                   <option value="auto">AUTO (Free + Paid Seamless)</option>
                   <option value="free">FREE_SAFE (High-Quota Lite)</option>
@@ -1247,7 +1247,7 @@ const LeadFinder = () => {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full h-11 mt-4 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.1em] shadow-[0_4px_20px_rgba(34,211,238,0.2)] disabled:opacity-50 transition-all font-mono"
+                className="w-full h-11 mt-4 bg-gradient-to-r from-gold-600/80 to-blue-600/80 hover:from-gold-500 hover:to-blue-500 text-white rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.1em] shadow-[0_4px_20px_rgba(34,211,238,0.2)] disabled:opacity-50 transition-all font-mono"
               >
                 {loading ? (
                   <span className="flex flex-col items-center">
@@ -1274,14 +1274,14 @@ const LeadFinder = () => {
         </div>
 
         {results.length > 0 && (
-          <div className="glass-panel p-5 border-cyan-500/20 bg-cyan-500/5">
+          <div className="glass-panel p-5 border-gold-500/20 bg-gold-500/5">
              <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-[0.2em] flex items-center gap-2">
                <ShieldCheck className="w-3 h-3 text-emerald-400" />
                Consolidated Data
              </h3>
              <div className="space-y-1 mb-4">
                 <p className="text-[10px] font-mono text-slate-400">
-                  Visible: <span className="text-cyan-400">
+                  Visible: <span className="text-gold-400">
                     {results.reduce((acc, r) => acc + (r && r.leads ? (roleFilter === 'ALL_PROTOCOLS' ? r.leads.length : r.leads.filter(l => l && l.role === roleFilter).length) : 0), 0)}
                   </span> identities
                 </p>
@@ -1303,7 +1303,7 @@ const LeadFinder = () => {
           <div className="mb-4 flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                <Activity className="w-3 h-3 text-cyan-400" />
+                <Activity className="w-3 h-3 text-gold-400" />
                 Batch Progress
               </h3>
               {analyzingIndustry && (
@@ -1317,7 +1317,7 @@ const LeadFinder = () => {
                 </p>
               )}
               {activeTierInfo && (
-                <p className="text-[9px] font-mono text-cyan-400/80 mt-0.5 truncate">
+                <p className="text-[9px] font-mono text-gold-400/80 mt-0.5 truncate">
                   {activeTierInfo}
                 </p>
               )}
@@ -1338,7 +1338,7 @@ const LeadFinder = () => {
                   <button
                     type="button"
                     onClick={handleReverifyIncomplete}
-                    className="px-2 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-[9px] font-mono uppercase text-cyan-300 hover:bg-cyan-500/20 flex items-center gap-1 transition-colors"
+                    className="px-2 py-1 rounded bg-gold-500/10 border border-gold-500/30 text-[9px] font-mono uppercase text-gold-300 hover:bg-gold-500/20 flex items-center gap-1 transition-colors"
                     title="Re-run LinkedIn & Industry Verification for companies with missing roles"
                   >
                     <RotateCcw className="w-2.5 h-2.5" />
@@ -1354,7 +1354,7 @@ const LeadFinder = () => {
                 <div className="flex items-center justify-between gap-3 text-[10px] font-mono">
                   <span className={cn(
                     "truncate max-w-[120px]",
-                    s.status === 'PROCESSING' ? "text-cyan-400" : 
+                    s.status === 'PROCESSING' ? "text-gold-400" : 
                     s.status === 'COMPLETED' ? "text-emerald-400" :
                     s.status === 'FAILED' ? "text-rose-400" : "text-slate-500"
                   )}>
@@ -1363,7 +1363,7 @@ const LeadFinder = () => {
                   <span className={cn(
                     "uppercase tracking-tighter text-[8px] font-bold px-1.5 py-0.5 rounded border leading-none",
                     s.status === 'PENDING' && "text-slate-500 border-slate-500/20",
-                    s.status === 'PROCESSING' && "text-cyan-400 border-cyan-400/20 bg-cyan-400/10 animate-pulse",
+                    s.status === 'PROCESSING' && "text-gold-400 border-gold-400/20 bg-gold-400/10 animate-pulse",
                     s.status === 'COMPLETED' && "text-emerald-400 border-emerald-400/20 bg-emerald-400/10",
                     s.status === 'FAILED' && "text-rose-400 border-rose-400/20 bg-rose-400/10"
                   )}>
@@ -1445,7 +1445,7 @@ const LeadFinder = () => {
                   <button
                     type="button"
                     onClick={handleReverifyIncomplete}
-                    className="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-mono uppercase tracking-wider text-cyan-300 hover:bg-cyan-500/20 flex items-center gap-1.5 transition-colors"
+                    className="px-3 py-1 rounded-lg bg-gold-500/10 border border-gold-500/30 text-[10px] font-mono uppercase tracking-wider text-gold-300 hover:bg-gold-500/20 flex items-center gap-1.5 transition-colors"
                   >
                     <RotateCcw className="w-3 h-3" />
                     Re-Verify Incomplete ({incompleteTargetsCount})
@@ -1458,9 +1458,9 @@ const LeadFinder = () => {
                 <p className="text-[9px] font-mono uppercase tracking-widest text-slate-500">Processed</p>
                 <p className="text-lg font-mono text-white mt-0.5">{results.length}</p>
               </div>
-              <div className="glass-panel px-4 py-3 border-cyan-500/15">
+              <div className="glass-panel px-4 py-3 border-gold-500/15">
                 <p className="text-[9px] font-mono uppercase tracking-widest text-slate-500">Verified Domains</p>
-                <p className="text-lg font-mono text-cyan-400 mt-0.5">
+                <p className="text-lg font-mono text-gold-400 mt-0.5">
                   {results.filter(r => Boolean(r?.domain)).length}
                 </p>
               </div>
@@ -1478,10 +1478,10 @@ const LeadFinder = () => {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-4 border-cyan-500/10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-4 border-gold-500/10">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-cyan-500/10 rounded-lg">
-                  <Search className="w-4 h-4 text-cyan-400" />
+                <div className="p-2 bg-gold-500/10 rounded-lg">
+                  <Search className="w-4 h-4 text-gold-400" />
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white uppercase tracking-widest">Active View Filter</h3>
@@ -1495,7 +1495,7 @@ const LeadFinder = () => {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-mono text-cyan-400 uppercase tracking-widest focus:outline-none focus:border-cyan-500/50 transition-all outline-none"
+                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-mono text-gold-400 uppercase tracking-widest focus:outline-none focus:border-gold-500/50 transition-all outline-none"
                   >
                     <option value="ALL">ALL_TARGETS</option>
                     <option value="WITH_LEADS">WITH_NAMED_LEADS</option>
@@ -1509,7 +1509,7 @@ const LeadFinder = () => {
                   <select 
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
-                    className="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-[10px] font-mono text-cyan-400 uppercase tracking-widest focus:outline-none focus:border-cyan-500/50 transition-all custom-scrollbar outline-none"
+                    className="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-[10px] font-mono text-gold-400 uppercase tracking-widest focus:outline-none focus:border-gold-500/50 transition-all custom-scrollbar outline-none"
                   >
                     <option value="ALL_PROTOCOLS">ALL_PROTOCOLS</option>
                     {availableRoles.map(role => (
@@ -1559,7 +1559,7 @@ const LeadFinder = () => {
                               ({result.companyIntel.brandName})
                             </span>
                           )}
-                        <span className="text-[8px] font-mono bg-cyan-400/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-400/20 uppercase tracking-widest leading-none">
+                        <span className="text-[8px] font-mono bg-gold-400/10 text-gold-400 px-2 py-0.5 rounded border border-gold-400/20 uppercase tracking-widest leading-none">
                           TARGET_{resIdx + 1}
                         </span>
                         {result.companyIntel?.verificationStage === 'SITE_AND_LINKEDIN_VERIFIED' && (
@@ -1587,7 +1587,7 @@ const LeadFinder = () => {
                               href={`https://${result.domain.replace(/^https?:\/\//i, '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-cyan-400 hover:underline lowercase font-mono inline-flex items-center gap-1"
+                              className="text-gold-400 hover:underline lowercase font-mono inline-flex items-center gap-1"
                             >
                               {result.domain}
                               <ExternalLink className="w-2.5 h-2.5" />
@@ -1610,7 +1610,7 @@ const LeadFinder = () => {
                           )}
                         {result.companyIntel?.industry && (
                           <span className="text-[9px] font-mono normal-case px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 inline-flex items-center gap-1">
-                            <Briefcase className="w-2.5 h-2.5 text-cyan-400" />
+                            <Briefcase className="w-2.5 h-2.5 text-gold-400" />
                             {result.companyIntel.industry}
                           </span>
                         )}
@@ -1625,7 +1625,7 @@ const LeadFinder = () => {
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                       <span className="text-[9px] font-mono text-cyan-500/60 uppercase">Found: {filteredLeads.length}</span>
+                       <span className="text-[9px] font-mono text-gold-500/60 uppercase">Found: {filteredLeads.length}</span>
                     </div>
                   </div>
 
@@ -1646,13 +1646,13 @@ const LeadFinder = () => {
                       )}
                       {result.companyIntel.phones.length > 0 && (
                         <div className="flex items-center gap-2 text-slate-300">
-                          <Phone className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                          <Phone className="w-3.5 h-3.5 text-gold-400 shrink-0" />
                           <span>{result.companyIntel.phones.join(' · ')}</span>
                         </div>
                       )}
                       {result.companyIntel.location && (
                         <div className="flex items-center gap-2 text-slate-400">
-                          <MapPin className="w-3.5 h-3.5 text-cyan-500/70 shrink-0" />
+                          <MapPin className="w-3.5 h-3.5 text-gold-500/70 shrink-0" />
                           <span>{result.companyIntel.location}</span>
                         </div>
                       )}
@@ -1685,7 +1685,7 @@ const LeadFinder = () => {
                                 href={safeSocial}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-cyan-300 hover:border-cyan-500/40 transition-colors"
+                                className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-gold-300 hover:border-gold-500/40 transition-colors"
                               >
                                 {label}
                               </a>
@@ -1716,7 +1716,7 @@ const LeadFinder = () => {
                           href={src.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[10px] font-mono text-cyan-400/80 hover:text-cyan-300 underline truncate max-w-[220px]"
+                          className="text-[10px] font-mono text-gold-400/80 hover:text-gold-300 underline truncate max-w-[220px]"
                           title={src.title}
                         >
                           {src.title}
@@ -1738,11 +1738,11 @@ const LeadFinder = () => {
              <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
-               className="glass-panel p-6 border-dashed border-cyan-500/30 animate-pulse flex items-center justify-center py-20"
+               className="glass-panel p-6 border-dashed border-gold-500/30 animate-pulse flex items-center justify-center py-20"
              >
                 <div className="text-center space-y-4">
-                   <Activity className="w-8 h-8 text-cyan-400 mx-auto animate-spin" />
-                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-400">Exfiltrating Data for Target {currentIndex + 1}...</p>
+                   <Activity className="w-8 h-8 text-gold-400 mx-auto animate-spin" />
+                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold-400">Exfiltrating Data for Target {currentIndex + 1}...</p>
                 </div>
              </motion.div>
           )}
@@ -1767,7 +1767,7 @@ const LeadFinder = () => {
                 </button>
                 <button
                   onClick={downloadAggregateJSON}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-mono font-bold uppercase tracking-wider text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded bg-gold-500/10 border border-gold-500/20 text-[9px] font-mono font-bold uppercase tracking-wider text-gold-400 hover:bg-gold-500/20 hover:border-gold-500/40 transition-all cursor-pointer"
                   title="Download raw JSON"
                 >
                   <Download className="w-3 h-3" />
@@ -1832,7 +1832,7 @@ const HistoryView = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Activity className="w-8 h-8 text-cyan-400 animate-spin" />
+        <Activity className="w-8 h-8 text-gold-400 animate-spin" />
       </div>
     );
   }
@@ -1841,16 +1841,16 @@ const HistoryView = () => {
     <div className="space-y-12 pb-20">
       <section className="space-y-6">
         <h2 className="text-xl font-light text-white tracking-[0.2em] flex items-center gap-3">
-          <Clock className="w-5 h-5 text-cyan-400" />
+          <Clock className="w-5 h-5 text-gold-400" />
           Lead_Discovery_Logs
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {leadhistory && leadhistory.length > 0 ? leadhistory.map((batch) => {
             if (!batch) return null;
             return (
-              <div key={batch.id} className="glass-panel p-5 relative group border-white/5 hover:border-cyan-500/30 transition-all">
+              <div key={batch.id} className="glass-panel p-5 relative group border-white/5 hover:border-gold-500/30 transition-all">
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-[10px] font-mono text-cyan-500 bg-cyan-500/5 px-2 py-1 rounded">
+                  <span className="text-[10px] font-mono text-gold-500 bg-gold-500/5 px-2 py-1 rounded">
                     {batch.created_at ? new Date(batch.created_at).toLocaleDateString() : 'N/A'}
                   </span>
                   <span className="text-[10px] font-mono text-slate-500 uppercase">
@@ -1863,7 +1863,7 @@ const HistoryView = () => {
                 </div>
                 <div className="flex justify-between items-center text-[10px] text-slate-400 pt-4 border-t border-white/5">
                   <span className="flex items-center gap-1.5"><FileSpreadsheet className="w-3 h-3" /> Grounded</span>
-                  <span className="font-mono text-cyan-400/60 uppercase">ACTIVE</span>
+                  <span className="font-mono text-gold-400/60 uppercase">ACTIVE</span>
                 </div>
               </div>
             );
@@ -1880,24 +1880,24 @@ export default function App() {
   const [mode, setMode] = useState<AppMode>('LEAD_GEN');
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden font-sans selection:bg-cyan-500/30 selection:text-white">
+    <div className="min-h-screen relative overflow-x-hidden font-sans selection:bg-gold-500/30 selection:text-white">
       {/* Immersive Atmosphere Blobs */}
-      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-900/20 rounded-full blur-[140px] pointer-events-none animate-pulse" />
-      <div className="fixed bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-blue-900/15 rounded-full blur-[100px] pointer-events-none" />
-      <div className="fixed top-[40%] right-[10%] w-[20%] h-[20%] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold-900/20 rounded-full blur-[140px] pointer-events-none animate-pulse" />
+      <div className="fixed bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-gold-900/15 rounded-full blur-[100px] pointer-events-none" />
+      <div className="fixed top-[40%] right-[10%] w-[20%] h-[20%] bg-gold-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Top Navigation Rail (Immersive Branding) */}
-      <nav className="fixed top-0 left-0 w-full h-20 px-8 flex justify-between items-center z-50 bg-[#02040a]/40 backdrop-blur-xl border-b border-white/5">
+      <nav className="fixed top-0 left-0 w-full h-20 px-8 flex justify-between items-center z-50 bg-[#0a0800]/40 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-5">
-           <div className="h-10 w-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-[0_0_25px_rgba(34,211,238,0.3)] animate-pulse">
+           <div className="h-10 w-10 bg-gradient-to-br from-gold-400 to-amber-600 rounded-xl flex items-center justify-center shadow-[0_0_25px_rgba(212,175,55,0.3)] animate-pulse">
               <Activity className="w-6 h-6 text-white" />
            </div>
            <div>
              <h1 className="text-xl font-bold text-white tracking-widest uppercase flex items-baseline gap-1">
-               LeadGen <span className="text-cyan-400 text-sm italic font-light tracking-[0.2em] relative top-[-2px]">Pro</span>
+               LeadGen <span className="text-gold-400 text-sm italic font-light tracking-[0.2em] relative top-[-2px]">Pro</span>
              </h1>
              <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.3em] text-slate-500 font-bold">
-               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+               <span className="w-1.5 h-1.5 rounded-full bg-gold-500 shadow-[0_0_8px_rgba(212,175,55,0.5)]"></span>
                Core_Protocol_Active
              </div>
            </div>
@@ -1908,7 +1908,7 @@ export default function App() {
               onClick={() => setMode('LEAD_GEN')}
               className={cn(
                 "px-6 py-2 rounded-xl text-[10px] font-bold tracking-widest uppercase transition-all",
-                mode === 'LEAD_GEN' ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 shadow-[0_0_20px_rgba(34,211,238,0.1)]" : "text-slate-500 hover:text-slate-300"
+                mode === 'LEAD_GEN' ? "bg-gold-400/10 text-gold-400 border border-gold-400/20 shadow-[0_0_20px_rgba(212,175,55,0.1)]" : "text-slate-500 hover:text-slate-300"
               )}
             >
               Analysis_Suite
@@ -1917,7 +1917,7 @@ export default function App() {
               onClick={() => setMode('HISTORY')}
               className={cn(
                 "px-6 py-2 rounded-xl text-[10px] font-bold tracking-widest uppercase transition-all",
-                mode === 'HISTORY' ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 shadow-[0_0_20px_rgba(34,211,238,0.1)]" : "text-slate-500 hover:text-slate-300"
+                mode === 'HISTORY' ? "bg-gold-400/10 text-gold-400 border border-gold-400/20 shadow-[0_0_20px_rgba(212,175,55,0.1)]" : "text-slate-500 hover:text-slate-300"
               )}
             >
               Historical_Logs
@@ -1957,7 +1957,7 @@ export default function App() {
       <footer className="fixed bottom-0 left-0 w-full px-8 py-4 bg-black/60 backdrop-blur-2xl border-t border-white/5 flex justify-between items-center z-50">
         <div className="flex gap-10">
           <div className="flex items-center gap-3">
-             <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_8px_cyan]" />
+             <div className="w-1.5 h-1.5 bg-gold-400 rounded-full shadow-[0_0_8px_cyan]" />
              <div className="flex flex-col">
                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-bold font-mono">Telemetry_Latency</span>
                <span className="text-[10px] text-white font-mono">42ms_Synchronized</span>
@@ -1986,3 +1986,4 @@ export default function App() {
     </div>
   );
 }
+
